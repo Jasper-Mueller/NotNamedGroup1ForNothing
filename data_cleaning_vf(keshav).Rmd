@@ -1,0 +1,356 @@
+---
+title: "ML Happiness"
+author: "Jasper"
+date: "12/1/2020"
+output: html_document
+---
+
+## libraries
+
+```{r}
+
+library(readr)
+library(dplyr)
+library(vroom)
+library(janitor)
+library(here)
+library(Hmisc)
+library(gapminder)
+library(countrycode)
+library(tidyverse)
+
+```
+
+
+## Load the data
+
+### Happiness Data
+
+```{r loading data}
+
+data_2019 <- read.csv("00_Data/2019.csv") %>% 
+  clean_names()
+
+```
+
+Adding additional info for matching purposes
+
+```{r adding additional information}
+
+data_2019_01 <- data_2019
+
+data_2019_02 <- data_2019_01 %>% 
+  mutate(continent = countrycode(sourcevar = data_2019_01[[2]],
+                            origin = "country.name",
+                            destination = "continent"),
+         region = countrycode(sourcevar = data_2019_01[[2]],
+                            origin = "country.name",
+                            destination = "region"),
+         iso2c = countrycode(sourcevar = data_2019_01[[2]],
+                            origin = "country.name",
+                            destination = "iso2c"),
+         )
+
+```
+
+
+Imputing values for Kosovo:
+
+continent == Europe
+iso2c == XK, as used by the European Commission
+
+```{r}
+
+data_2019_03 <- data_2019_02 %>%
+  mutate(iso2c = if_else(country_or_region=="Kosovo", 
+                         "XK", 
+                         iso2c) ,
+         continent = if_else(country_or_region=="Kosovo",
+                             "Europe",
+                             continent)
+  ) 
+
+data_2019_03 %>% 
+  group_by(iso2c) %>% 
+  count() %>% 
+  arrange(desc(n))
+
+data_2019_03 %>% 
+  filter(iso2c == "CY")
+
+```
+
+Northern Cyprus and Cyprus are listed as different countries.  
+The iso standard however has them listed as one country.  
+for our further analysis we will combine the two, taking the average
+
+```{r cyprus, warning = FALSE}
+
+#Aggreagating numeric values
+cy_data <- aggregate(x = data_2019_03, by = list(data_2019_03$iso2c), FUN = mean) %>% 
+  filter(Group.1 == "CY")
+
+#replacing cyprus values with averages
+data_2019_04 <- data_2019_03 %>% 
+  mutate(score = if_else(country_or_region == "Cyprus", cy_data$score, score),
+         gdp_per_capita = if_else(country_or_region == "Cyprus", cy_data$gdp_per_capita, gdp_per_capita),
+         social_support = if_else(country_or_region == "Cyprus", cy_data$social_support, social_support),
+         healthy_life_expectancy = if_else(country_or_region == "Cyprus",cy_data$healthy_life_expectancy, healthy_life_expectancy),
+         freedom_to_make_life_choices = if_else(country_or_region == "Cyprus", cy_data$freedom_to_make_life_choices, freedom_to_make_life_choices),
+         generosity = if_else(country_or_region == "Cyprus", cy_data$generosity, generosity),
+         perceptions_of_corruption = if_else(country_or_region == "Cyprus", cy_data$perceptions_of_corruption, perceptions_of_corruption)
+           ) %>% 
+  #deleting northern cyprus
+  filter(country_or_region != "Northern Cyprus")
+
+```
+
+```{r final data set happy}
+
+happy_data_2019 <- data_2019_04
+
+rm(data_2019, data_2019_01, data_2019_02, data_2019_03, data_2019_04, cy_data)
+
+```
+
+### Adding population data
+
+Loading the population data
+
+```{r loading pop data}
+country_population <- read_csv("00_Data/country_population.csv", 
+    skip = 3) %>% 
+  clean_names() %>% dplyr::select(c(country_name, country_code, x2019))
+
+```
+cleaning the data and adding it to our data set
+
+```{r adding pop data}
+country_population <- country_population %>% 
+  mutate(iso2c = countrycode(sourcevar = country_population[[1]],
+       origin = "country.name",
+       destination = "iso2c")) %>% 
+  filter(!is.na(iso2c))
+
+happy_data_2019_02 <- left_join(happy_data_2019, country_population, by = "iso2c")
+
+happy_data_2019_02 <- happy_data_2019_02 %>% 
+  mutate(x2019 = case_when(iso2c == "TW" ~ 23773876,
+                           iso2c == "XK" ~ 1794248,
+                           TRUE ~ x2019)) %>% 
+  rename(population = x2019)
+
+#https://data.worldbank.org/indicator/SP.POP.TOTL?locations=XK
+
+happy_data_2019 <- happy_data_2019_02 %>% 
+  dplyr::select(-c(country_name, country_code))
+  
+rm(happy_data_2019_02, country_population)
+```
+
+
+## Adding GDP Data 
+
+loading data on gini index and the gap minder data set
+
+```{r loading gdp data}
+
+gapminder_2019 <- read.csv("00_Data/gapminder 2019.csv") %>% 
+  clean_names() %>% 
+  rename(gdpPercap = x2019)
+
+
+gini_2019 <- read.csv("00_Data/gini.csv") %>% 
+  clean_names() %>% 
+  rename(gini = x2019)
+
+grossni_2019<- read.csv("00_Data/gni2019.csv") %>% 
+  clean_names() %>% 
+  rename(grossni = x2019) 
+
+emp_2019<- read.csv("00_Data/employment.csv") %>% 
+  clean_names() %>% 
+  rename(emp_rate = x2019) 
+
+```
+
+cleaning the data and adding it to our data set
+
+```{r}
+
+#adding gapminder
+
+gapminder_2019 <- gapminder_2019 %>% 
+  mutate(iso2c = countrycode(sourcevar = country,
+       origin = "country.name",
+       destination = "iso2c")) %>% 
+  filter(!is.na(iso2c))
+
+gapminder_2019_merged <- merge(happy_data_2019, gapminder_2019, ) %>% 
+  dplyr::select(-country)
+
+#adding gini
+
+gini_2019 <- gini_2019 %>% 
+  mutate(iso2c = countrycode(sourcevar = country,
+       origin = "country.name",
+       destination = "iso2c")) %>% 
+  filter(!is.na(iso2c)) %>% 
+  dplyr::select(-c(x2018, country))
+
+gapminder_2019_merged <- merge(gapminder_2019_merged, gini_2019)
+
+#adding grossni
+
+grossni_2019 <- grossni_2019 %>% 
+  mutate(iso2c = countrycode(sourcevar = country,
+       origin = "country.name",
+       destination = "iso2c")) %>% 
+  filter(!is.na(iso2c)) %>% 
+  dplyr::select(-c(country))
+
+gapminder_2019_merged <- merge(gapminder_2019_merged, grossni_2019)
+
+#adding gini
+
+emp_2019 <- emp_2019 %>% 
+  mutate(iso2c = countrycode(sourcevar = country,
+       origin = "country.name",
+       destination = "iso2c")) %>% 
+  filter(!is.na(iso2c)) %>% 
+  dplyr::select(-c(country))
+
+happy_data_2019 <- merge(gapminder_2019_merged, emp_2019)
+
+rm(gini_2019, gapminder_2019, gapminder_2019_merged, grossni_2019, emp_2019)
+
+```
+
+### Food
+
+Loading the data
+
+```{r}
+
+food_supply <- vroom::vroom(here::here("00_Data","foodbalance.csv")) %>% 
+  clean_names()
+
+#deselecting rows
+food_supply <- food_supply %>%
+  select(-c(domain_code, domain, area_code, element_code, item_code, year_code, flag, flag_description, unit))
+
+
+```
+
+
+Cleaning the data
+
+```{r}
+food_supply_tidy <- food_supply %>%
+  pivot_wider(names_from="element", values_from="value") %>%
+  mutate(category=case_when(item %in% c("Wheat and products", "Rice and products", "Barley and Products", "Maize and products", "Rye and products", "Oats", "Millet and products", "Sorghum and products", "Cereals, Other") ~ "Grains", item %in% c( "Potatoes and Products", "Sweet potatoes", "Yams", "Roots, Other") ~ "Starches", 
+                            item %in% c("Sugar cane", "Sugar beet", "Sugar non-centrifugal", "Sugar (Raw Equivalent)", "Sweeteners, Other", "Honey")~"Sugar and Sweeteners", 
+                            item %in% c("Beans", "Peas", "Pulses, Other and Products")~"Legumes", 
+                            item %in% c("Nuts and products", "Soyabeans", "Groundnuts (Shelled Eq)", "Sunflower seed", "Rape and Mustardseed", "Cottonseed", "Sesame seed", "Coconuts - Incl Copra", "Palm kernels")~ "Nuts and seeds", 
+         item %in% c("Oilcrops, Other", "Soyabean Oil", "Groundnut Oil", "Sunflowerseed Oil", "Rape and Mustard Oil", "Cottonseed Oil", "Palmkernel Oil", "Coconut Oil", "Sesameseed Oil", "Olive Oil", "Ricebran Oil", "Maize Germ Oil", "Oilcrops Oil, Other")~"Oils", 
+         item %in% c("Olives (including preserved)", "Tomatoes and products", "Onions","Vegetables, Other", "Oranges, Mandarines", "Lemons, Limes, and products","Grapefruit and products", "Citrus, Other", "Bananas", "Plantains", "Apples and products", "Pineapples and products", "Dates", "Grapes and products (excl wine)", "Fruits, Other")~"Fruits and Vegetables", 
+         item %in% c("Coffee and products", "Tea (including mate)")~"Coffee and Tea", 
+         item %in% c("Cocoa Beans and products")~"Chocolate", 
+         item %in% c("Pepper", "Pimento", "Cloves", "Spices, Other")~ "Spices", 
+         item %in% c("Wine", "Beer", "Beverages, Fermented", "Beverages, Alcoholic", "Alcohol, Non-Food")~"Alcohol", item %in% c("Bovine meat", "Mutton & Goat Meat", "Pigmeat", "Poultry Meat", "Meat, Other", "Offals, Edible", "Meat, Aquatic Mammals")~ "Meat", 
+         item %in% c("Butter, Ghee", "Cream", "Fats, Animals, Raw", "Eggs", "Milk")~"Eggs and Dairy", 
+         item %in% c("Fish, Body Oil", "Fish, Liver Oil", "Freshwater Fish", "Demersal Fish", "Pelagic Fish", "Marine Fish, Other", "Crustaceans", "Cephalopods", "Molluscs, Other", "Aquatic Animals, Others", "Aquatic Plants")~ "Seafood", 
+         item %in% c("Population", "Infant food", "Miscellaneous")~ "Other"))
+
+#filter out just food categories 
+food_supply_tidy <- food_supply_tidy %>%
+  filter(category%in%c("Grains", "Meat", "Seafood", "Spices", "Fruits and Vegetables", "Oils", "Nuts and seeds", "Legumes", "Sugar and Sweeteners", "Starches", "Eggs and Dairy", "Chocolate"))%>%
+  select(-c("Total Population - Both sexes"))
+
+
+#create iso2c column to match countries 
+food_supply_tidy <- food_supply_tidy %>%
+  mutate(iso2c = countrycode(sourcevar = food_supply_tidy[[1]],
+                            origin = "country.name",
+                            destination = "iso2c")) %>% 
+  clean_names()%>%
+  group_by(iso2c) %>%
+  mutate(food_supply_kcal_capita_day = ifelse(is.na(food_supply_kcal_capita_day), 0, food_supply_kcal_capita_day))%>%
+  summarise(food_supply_kcal_capita_day=sum(food_supply_kcal_capita_day)) 
+  
+
+```
+
+Joining the data sets 
+
+```{r}
+
+#join two dataframes 
+happy_data_2019 <- left_join(happy_data_2019, food_supply_tidy , on="iso2c")
+
+rm(food_supply, food_supply_tidy)
+```
+
+### Alcohol
+
+loading the data
+
+```{r}
+
+alcohol_2019 <- vroom::vroom(here::here("00_Data","data_new.csv")) %>% 
+  clean_names()
+
+```
+
+```{r}
+
+alcohol_2019 <- alcohol_2019 %>% 
+  mutate(iso2c = countrycode(sourcevar = country,
+       origin = "country.name",
+       destination = "iso2c")) %>% 
+  filter(!is.na(iso2c)) %>% 
+  select(-c(score))
+  
+
+happy_data_2019 <- left_join(happy_data_2019, alcohol_2019 , by=c("iso2c" = "iso2c"))
+
+rm(alcohol_2019)
+
+```
+
+
+### Gender
+
+Loading gender data
+
+```{r}
+
+gender_2019 <- vroom::vroom(here::here("00_Data","Gender.csv")) %>% 
+  clean_names()
+
+```
+Loading gender data
+
+```{r}
+
+gender_2019 <- gender_2019 %>% 
+  filter(indicator == "Gender equality")
+
+```
+cleaning data and adding it to the data set
+
+```{r}
+
+gender_2019 <- gender_2019 %>% 
+  select(c(country_name, indicator_in_2018)) %>% 
+  rename(gender_equ_indicator = indicator_in_2018) %>% 
+    mutate(iso2c = countrycode(sourcevar = country_name,
+       origin = "country.name",
+       destination = "iso2c")) %>% 
+  filter(!is.na(iso2c))
+  
+
+happy_data_2019 <- left_join(happy_data_2019, gender_2019 , by=c("iso2c" = "iso2c"))
+
+```
+
