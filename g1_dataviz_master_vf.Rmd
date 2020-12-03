@@ -53,8 +53,10 @@ library(extrafont)
 ### Happiness Data
 
 We start off with by loading in the happiness data. The data set was retrieved from Kaggle and includes data on countries measured in an index called the happiness score.
-The happiness scores use data from the Gallup World Poll. The scores are based on answers to the main life evaluation question asked in the poll. This question, known as the Cantril Ladder, asks respondents to think of a ladder with the best possible life for them being a 10 and the worst possible life being a 0 and to rate their own current lives on that scale.
-The data set also includes data on other socio-economic indicators, which we will ignore for our analysis.
+
+The happiness scores and rankings use data from the Gallup World Poll. The scores are based on answers to the main life evaluation question asked in the poll. This question, known as the Cantril ladder, asks respondents to think of a ladder with the best possible life for them being a 10 and the worst possible life being a 0 and to rate their own current lives on that scale. The scores are from nationally representative samples and use the Gallup weights to make the estimates representative. The survey contains six main sectors – economic production, social support, life expectancy, freedom, absence of corruption, and generosity – contribute to making life evaluations higher in each country than they are in Dystopia. In the 2019 World Happiness Dataset we take for analysis, there are 9 variables: Overall Rank, Country or region, Score, GDP per capita, Social support, Healthy life expectancy, Freedom to make life choice, Generosity, Perception of corruption.
+
+First, we load the data.
 
 ```{r loading data}
 #load happiness data 
@@ -219,7 +221,7 @@ emp_2019<- read.csv("00_Data/employment.csv") %>%
 
 ```
 
-We clean the data and adding it to our data set. 
+We clean the data and add it to our data set. 
 
 ```{r}
 
@@ -231,7 +233,7 @@ gapminder_2019 <- gapminder_2019 %>%
        destination = "iso2c")) %>% 
   filter(!is.na(iso2c))
 
-gapminder_2019_merged <- merge(happy_data_2019, gapminder_2019, ) %>% 
+gapminder_2019_merged <- merge(gapminder_2019, happy_data_2019) %>% 
   dplyr::select(-country)
 
 #adding gini
@@ -342,7 +344,7 @@ food_supply <- food_supply %>%
 ```
 
 
-Next we clean the data and create food categories. 
+Next we clean the data and create food categories. The data is not in tidy format, so first we must pivot wider. 
 
 ```{r}
 food_supply_tidy <- food_supply %>%
@@ -441,7 +443,8 @@ gender_2019 <- gender_2019 %>%
   filter(indicator == "Gender equality")
 
 ```
-cleaning data and adding it to the data set
+
+We then clean the data by creating iso2c codes and merge it with the main dataset. 
 
 ```{r}
 #create iso2c codes
@@ -623,7 +626,7 @@ Interestingly enough, the top 5 is completely made up of European countries.
 The bottom 5 unhappiest countries are mostly from Africa with the exception of Afghanistan, an Asia country.
 
 
-# Does money buy happiness? 
+# "Money can't buy happiness"
 
 To investigate the claim, we sought to explore the relationship between economic indicators and happiness. We looked at the Gapminder dataset and picked 4 variables of interest that best represents a person’s economic wellbeing (GDP per capita PPP, Gini coefficient, GNI per capita & Employment Rate). The thinking here is that a high incomer, equal society with ample jobs would represent a more prosperous society.
 
@@ -691,6 +694,7 @@ ggplot(happy_data_2019_gap, aes(y=score, x=log(gdpPercap), color=gini_category))
   NULL
 
 ```
+We see that Switzerland, where the quote originates, follows the trend!
 
 ## Correlation Matrix 
 
@@ -770,7 +774,7 @@ We found that money is a significant contributor to happiness.  Some critiques o
 1)    GDP per capita PPP is an average measure and thus does not reflect the overall wellbeing of a country. Sometimes, a country can have a lot of paper wealth but that does not necessarily into disposable income.
 2)    It was difficult to find income data on certain countries such as Greenland, Syria South Sudan etc. Since we used best estimates, there could some bias in our estimates as a result.
 
-# Exploring the relationship between happiness and food consumption 
+# "Barriga llena, Corazon contento" (Full stomach, happy heart) 
 
 In order to explore how food impacts happiness, we are using the measure of kcal per capita per person per day. The data comes from the Food and Agriculture Organization of the United nations and is from 2017. 
 
@@ -838,7 +842,7 @@ happy_data_2019 %>%
         legend.position = "bottom"
         )
 ```
-As we can see in the plot above, food supply is positively correlated with happiness, affirming our hypothesis. We will investigate further when we build our model whether food supply is a significant predictor of happiness. 
+As we can see in the plot above, food supply is positively correlated with happiness, affirming our hypothesis. We will investigate further when we build our model whether food supply is a significant predictor of happiness. We see Colombia somewhat follows the trend. 
 
 ## Fish consumption 
 
@@ -939,7 +943,7 @@ Based on the plot above, six out of the top 10 fish consuming countries are also
 
 One key limitation of the food supply analysis is the metric itself. Unfortunately, we could not find a good, current indicator for food consumption, so we had to settle for food supply. However, this means that countries that export a lot of food would score higher in terms of food supply per capita, even if their population is not actually consuming that much food. Another limitation is that there are probably confounding factors that influence food supply in a specific country. For instance, most countries that have a larger food supply also tend to be wealthier. 
 
-# Alcohol 
+# Glück ist: keine Termine und leicht einen sitzen
 
 
 We want to explore how happiness and alcohol consumption are related by creating a scatterplot with alcohol consumption on x axis and happiness score on y axis. Since happiness and gdp per capita are correlated it could be that richer countries buy more alcohol. We investigate this by using points of different size to indicate GDP Per Capita. Finally we use the colour to show which type of alcohol is the most consumed in each country. Furthermore, boxplot helps us explore the median value of a happiness score based on the most consumed type of alcohol.
@@ -1005,6 +1009,8 @@ ggplot(data,aes(x=total_litres_of_pure_alcohol,y=score,size=gdpPercap, color=mos
         ) +
   NULL
 ```
+We see Germany definitely follows their own advice!! 
+
 
 ```{r}
 #boxplot
@@ -1061,7 +1067,7 @@ equality %>%
   ggplot() +
   geom_sf(aes(fill = gender_equ_indicator), size = 0.1, color = "White") +
   coord_sf(crs = "+proj=longlat +ellps=WGS84")  + #Mollweide projection
-scale_fill_gradient(low = "#DFF5EF", high = "#5DCEAF", na.value = "#DCDCDC")+ 
+scale_fill_gradient(low = "#DFF5EF", high = "#34AC8B", na.value = "#DCDCDC")+ 
   labs(title = "Gender equality across the world", fill = "Gender equality index") + 
   theme_minimal() + 
    theme(plot.title = element_text(face = "bold", size=12, family="Lato"),
@@ -1146,14 +1152,17 @@ ggplot(index_1, aes(x=gender_equ_indicator,
           ) +
   NULL
 ```
+In the plot above, we can see that the US follows the trend as well. 
+
+
 
 In Gender equality dataset, a few countries, such as Iceland, Luxembourg, Malta, Kosovo, Montenegro, Bhutan, Laos, Palestinian Territories, Congo Kinshasa, and Comoros  were missing. Therefore, they were not shown in Gender Equality map. Also, when Happiness and Gender Equality dataset were joined, some countries had NA value for happiness or gender equality index. These countries had to be removed. It is also worth noting, that Gender Equality dataset was from 2018 year, while Happiness file was from 2019.
 
 
 
-# ML model 
+# ML Model based on our datasets 
 
-After we gathered common wisdom, myths and saysing across the world, it time to come back and put our knowledge to the test.
+After we gathered common wisdom, myths and sayings across the world, it is time to come back and put our knowledge to the test.
 Lets see how well our 4 sayings can predict how happy a country is.
 
 We build a prediction tree model that will include information on:
