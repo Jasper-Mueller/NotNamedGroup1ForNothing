@@ -1,7 +1,6 @@
 # World Happiness Index :slightly_smiling_face:
 
-"Dont worry, be happy"
-"Hakuna Matata"
+**"Dont worry, be happy" & "Hakuna Matata"**  
 
 Easier said than done! 2020 has been a mess for us all. With all the negativity around us, somtimes the simple mantra of "just be happy" seems unachievable.
 So we asked ourselfs: "What makes people happy?"
