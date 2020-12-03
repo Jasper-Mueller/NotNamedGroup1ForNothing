@@ -1,10 +1,17 @@
 # World Happiness Index :slightly_smiling_face:
 
-The goal of our project is to explore whether popular happiness sayings hold true in reality by exploring the world happiness report as well as datasets on food consumption, gender equality, GDP per capita, social equality and alcohol consumption. The happiness dataset was retrieved from Kaggle and includes data on countries measured in an index called the happiness score.
+"Dont worry, be happy"
+"Hakuna Matata"
+
+Easier said than done! 2020 has been a mess for us all. With all the negativity around us, somtimes the simple mantra of "just be happy" seems unachievable.
+So we asked ourselfs: "What makes people happy?"
+
+To find an answer to that questions, we put all data visualization tools we own in our suitcase and embarked on a journey to figured out the answer to exactly this question. Our journes took us from Switzerland to the USA, to Germany and to Colombia.
+From each destination, we brought back one saying, proverb or phrase about happiness, and explore, whether they can help us answer the question which has puzzeld humanity for so long.
 
 **“Money can’t buy you happiness”** :money_with_wings:   
 
-First, we explore “Money can’t buy you happiness”. To investigate the claim, we seek to explore the relationship between economic indicators and happiness. We pick 4 variables of interest that best represents a society’s economic wellbeing (GDP per capita PPP, Gini coefficient, GNI per capita & Employment Rate) from the Gapminder dataset. We hypothesise that higher income and more equal societies with ample jobs are happier. Our analysis interestingly finds that more money is correlated with higher level of happiness in all countries.
+First, we explore “Money can’t buy you happiness”. To investigate the claim, we seek to explore the relationship between economic indicators and happiness. To proxy a measure of happiness, we retreived a dataset from Kaggle that includes data on countries measured in an index called the happiness score. We then pick 4 variables of interest that best represents a society’s economic wellbeing (GDP per capita PPP, Gini coefficient, GNI per capita & Employment Rate) from the Gapminder dataset. We hypothesise that higher income and more equal societies with ample jobs are happier. Our analysis interestingly finds that more money is correlated with higher level of happiness in all countries.
 
 **“Happy stomach, happy heart”** :hamburger:  
 
