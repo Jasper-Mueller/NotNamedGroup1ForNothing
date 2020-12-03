@@ -1,4 +1,4 @@
-# NotNamedGroup1ForNothing
+# World Happiness Index :slightly_smiling_face:
 
 The goal of our project is to explore whether popular happiness sayings hold true in reality by exploring the world happiness report as well as datasets on food consumption, gender equality, GDP per capita, social equality and alcohol consumption. The happiness dataset was retrieved from Kaggle and includes data on countries measured in an index called the happiness score.
 
