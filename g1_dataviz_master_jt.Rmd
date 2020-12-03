@@ -1094,8 +1094,8 @@ ggplot(index_1, aes(x=gender_equ_indicator,
                     y= score, fill = continent, size = population)) +
   geom_point(alpha = 0.5, shape = 21, color = "black") +
   geom_point(data = index_1 %>% filter(country_or_region == "United States"),
-             aes(x=gender_equ_indicator, y = score),
-             color = "red",shape = 21, stroke = 2) +
+             aes(x=gender_equ_indicator, y = score,size = population),
+             color = "red",shape = 21, stroke = 2, inherit.aes = FALSE) +
     xlab("Gender Equality Index") +
     ylab("Happiness Index") +
    # facet_wrap(~region) +
