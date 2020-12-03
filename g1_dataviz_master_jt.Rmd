@@ -952,16 +952,16 @@ happy_data_alc<-happy_data_2019 %>%
   mutate(most_loved=if_else(beer_servings>wine_servings & beer_servings>spirit_servings,'Beer',
                             if_else(wine_servings>beer_servings & wine_servings>spirit_servings,'Wine','Spirits')))
 data <- happy_data_alc %>% 
-  mutate(most_loved=if_else(beer_servings==0 & wine_servings==0 & spirit_servings==0,'None',most_loved))
-
-
-
-ggplot(data,aes(x=total_litres_of_pure_alcohol,y=score,size=gdp_per_capita.y,color=most_loved))+
+  mutate(most_loved=if_else(beer_servings==0 & wine_servings==0 & spirit_servings==0,'None',most_loved)) %>% 
+  filter(!is.na(total_litres_of_pure_alcohol))
+ggplot(data,aes(x=total_litres_of_pure_alcohol,y=score,size=gdpPercap, color=most_loved))+
   geom_point(alpha=0.5)+
+  geom_point(data = data %>% filter(country_or_region == "Germany"),
+             aes(x=total_litres_of_pure_alcohol,y=score, size=gdpPercap), color = "red",shape = 21, stroke = 2)+
   theme_minimal()+
   labs(title='In happier countries people drink more, but they are also richer!',subtitle='Beer is the most consumed drink overall',x='Litres of alcohol per person',y='Happiness Score',caption='Source: WHR & FivethirtyEight')+
    theme_minimal() + 
-  scale_color_manual(values=c("#FF8021", "#5ECCF3", "#31489F", "#5DCEAF"))+ 
+  scale_color_manual(values=c("#FF8021", "#5ECCF3", "#31489F", "#5DCEAF")) + 
    theme(plot.title = element_text(face = "bold", size=12, family="Lato"),
         plot.caption = element_text(size=7, color="gray", hjust=1),
         plot.subtitle = element_text(size=9),
@@ -971,7 +971,39 @@ ggplot(data,aes(x=total_litres_of_pure_alcohol,y=score,size=gdp_per_capita.y,col
         axis.text.x = element_text(size=7),
         axis.title = element_text(size=9, vjust = -1), 
         legend.title= element_text(face="bold", size=8))+ 
-  labs(size="GDP Per Capita",color='Most Consumed')
+  labs(size="GDP Per Capita",color='Most Consumed') +
+  guides(size = guide_legend(override.aes = list(color = "grey", stroke = 0) ),
+         color = guide_legend(override.aes = list(size = 4))
+         ) +
+    geom_curve(
+    data = data.frame(x = 12.5, y = 4.2, xend = 11.3*1.02, yend = 6.985*0.97),
+    mapping = aes(x = x, y = y, xend = xend, yend = yend),
+    colour = "grey15",
+    size = 0.5,
+    curvature = 0.25,
+    arrow = arrow(length = unit(2, "mm"), type = "closed"),
+    inherit.aes = FALSE ) +
+  # adding text field
+  geom_text(
+    data = data.frame(x = 12.5, y = 4.2, label = "Germany"),
+    aes(x = x, y = y, label = label),
+    #colour="#FDB519",
+    family="Lato",
+    #hjust = 1,
+    vjust = 1,
+    lineheight = .8,
+    inherit.aes = FALSE,
+  ) +  theme(plot.title = element_text(face = "bold", size=12, family="Lato"),
+        plot.caption = element_text(size=7, color="gray"),
+        plot.subtitle = element_text(size=9),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.line = element_line(colour = "gray"), 
+        axis.text.x = element_text(size=7),
+        axis.title = element_text(size=9, vjust = -1),
+        #legend.position = "none"
+        ) +
+  NULL
 ```
 
 ```{r}
@@ -1058,24 +1090,20 @@ scale_fill_gradient(low = "#DFF5EF", high = "#5DCEAF", na.value = "#DCDCDC")+
 index_1 <- happy_data_2019 %>%
   filter(!is.na(region))
 #View(index_1)
- 
-  ggplot(index_1, aes(x=gender_equ_indicator,
+ggplot(index_1, aes(x=gender_equ_indicator,
                     y= score, fill = continent, size = population)) +
   geom_point(alpha = 0.5, shape = 21, color = "black") +
-    
+  geom_point(data = index_1 %>% filter(country_or_region == "United States"),
+             aes(x=gender_equ_indicator, y = score),
+             color = "red",shape = 21, stroke = 2) +
     xlab("Gender Equality Index") +
     ylab("Happiness Index") +
    # facet_wrap(~region) +
- 
     labs(title = "More equal countries tend to be happier", subtitle = "Gender equality index vs. happiness score, \nby continent and population size", fill = "Continent") + 
-    
   theme_minimal() +
-    
   scale_size_continuous(breaks = c(5e+08, 1e+09), labels = c("500m", "1000m"), range = c(2, 22), name="Country Population Size")+ # Legend name + Size
-    
   theme(legend.position = "right", legend.title = element_text(face = "bold", size = 9),
   legend.text = element_text(size = 8)) + # Legend position
-  
     scale_fill_manual(values = c("#4E67C8", "#B4DCFA", "#FDB519", "#5DCEAF", "#F14124")) +# Color palette with legends shown
     #scale_fill_discrete(name = "Continent", labels = c("Europe", "Oceania", "Americas", "Asia", "Africa")) + 
     theme(plot.title = element_text(face = "bold", size=12, family="Lato"),
@@ -1085,7 +1113,38 @@ index_1 <- happy_data_2019 %>%
         panel.grid.minor = element_blank(),
         axis.line = element_line(colour = "gray"), 
         axis.text.x = element_text(size=7),
-        axis.title = element_text(size=9, vjust = -1))
+        axis.title = element_text(size=9, vjust = -1))+
+    guides(fill = guide_legend(override.aes = list(size = 4, colour = NA, alpha = 0.5))) +
+    guides(size = guide_legend(override.aes = list(colour = "grey", stroke = 0.5))) +
+    geom_curve(
+      data = data.frame(x = 0.36, y = 7.5, xend = 0.6880262*0.95, yend = 6.985*1),
+      mapping = aes(x = x, y = y, xend = xend, yend = yend),
+      colour = "grey15",
+      size = 0.5,
+      curvature = -0.25,
+      arrow = arrow(length = unit(2, "mm"), type = "closed"),
+      inherit.aes = FALSE ) +
+  # adding text field
+    geom_text(
+      data = data.frame(x = 0.3, y = 7.5, label = "United \nStates"),
+      aes(x = x, y = y, label = label),
+      #colour="#FDB519",
+      family="Lato",
+      #hjust = 1,
+      vjust = 1,
+      lineheight = .8,
+      inherit.aes = FALSE,
+      ) +  theme(plot.title = element_text(face = "bold", size=12, family="Lato"),
+          plot.caption = element_text(size=7, color="gray"),
+          plot.subtitle = element_text(size=9),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.line = element_line(colour = "gray"), 
+          axis.text.x = element_text(size=7),
+          axis.title = element_text(size=9, vjust = -1),
+          #legend.position = "none"
+          ) +
+  NULL
 ```
 
 In Gender equality dataset, a few countries, such as Iceland, Luxembourg, Malta, Kosovo, Montenegro, Bhutan, Laos, Palestinian Territories, Congo Kinshasa, and Comoros  were missing. Therefore, they were not shown in Gender Equality map. Also, when Happiness and Gender Equality dataset were joined, some countries had NA value for happiness or gender equality index. These countries had to be removed. It is also worth noting, that Gender Equality dataset was from 2018 year, while Happiness file was from 2019.
@@ -1172,7 +1231,6 @@ ggplot(Pred_Actual_dt, aes(Actual, Prediction)) +
   labs(title = "Actual Happiness diverts from our predictions, \nindicating bad model performance", subtitle= "Model predicitions vs. actual happiness score",x = "Actual happiness score",
        y = "Predicted happiness score") +
   scale_color_manual(values = c("#B4DCFA", "#FDB519")) +
-  #adding arrow
   geom_curve(
     data = data.frame(x = 7.1, y = 5.5, xend = 7.1, yend = 7.029143),
     mapping = aes(x = x, y = y, xend = xend, yend = yend),
@@ -1185,12 +1243,13 @@ ggplot(Pred_Actual_dt, aes(Actual, Prediction)) +
   geom_text(
     data = data.frame(x = 7.1, y = 5, label = label),
     aes(x = x, y = y, label = label),
-    colour="#FDB519",
+    #colour="black",
     family="Lato",
     hjust = 0.5,
     lineheight = .8,
     inherit.aes = FALSE,
-  ) +  theme(plot.title = element_text(face = "bold", size=12, family="Lato"),
+    ) +  
+  theme(plot.title = element_text(face = "bold", size=12, family="Lato"),
         plot.caption = element_text(size=7, color="gray"),
         plot.subtitle = element_text(size=9),
         panel.grid.major = element_blank(),
@@ -1200,7 +1259,8 @@ ggplot(Pred_Actual_dt, aes(Actual, Prediction)) +
         axis.title = element_text(size=9, vjust = -1),
         legend.position = "none") + 
   geom_point(data=Pred_Actual_dt %>% filter(format==TRUE),
-             aes(x=Actual, y=Prediction), size = 4, color = "#FDB519")
+             aes(x=Actual, y=Prediction), color = "red",shape = 21, stroke = 2, size = 5)
+  
   
 ```
 
