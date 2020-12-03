@@ -3,10 +3,10 @@
 **"Dont worry, be happy" & "Hakuna Matata"**  
 
 Easier said than done! 2020 has been a mess for us all. With all the negativity around us, somtimes the simple mantra of "just be happy" seems unachievable.
-So we asked ourselfs: "What makes people happy?"
+So we asked ourselves: "What makes people happy?"
 
-To find an answer to that questions, we put all data visualization tools we own in our suitcase and embarked on a journey to figured out the answer to exactly this question. Our journes took us from Switzerland to the USA, to Germany and to Colombia.
-From each destination, we brought back one saying, proverb or phrase about happiness, and explore, whether they can help us answer the question which has puzzeld humanity for so long.
+To find an answer to that questions, we put all data visualization tools we own in our suitcase and embarked on a journey to figured out the answer to exactly this question. Our journeys took us from Switzerland to the USA, to Germany and to Colombia.
+From each destination, we brought back one saying, proverb or phrase about happiness, and explored whether they can help us answer the question which has puzzeld humanity for so long.
 
 **“Money can’t buy you happiness”** :money_with_wings:   
 *Swiss philosopher Jean-Jacques Rousseau*  
