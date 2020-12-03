@@ -24,7 +24,7 @@ Secondly, we explore “Happy stomach, happy heart”. In order to explore how f
 Next, we explore the saying “True happiness is when you are free of appointments and tipsy”, using data from FiveThirtyEight.  Here we want to explore how happiness and alcohol consumption are related, while at the same time taking into account the relationship between happiness and GDP per capita as it could be that richer countries buy more alcohol. Also, we explore which type of alcoholic beverage is the most consumed in each country and which group has the highest happiness score based on their most consumed beverage.
 
 **“Happy wife, happy life”** :couple:  
-*German saying*   
+*American saying*   
 
 Finally, we explore “Happy wife, happy life” by looking at the relationship between gender equality and happiness, using data from the World Bank. Based on our results, gender equality is a significant factor when considering level of happiness in a country. Countries, with a considerably smaller population size and located in Europe, tend to have a high index of gender equality and happiness.
 
