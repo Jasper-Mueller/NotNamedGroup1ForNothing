@@ -537,12 +537,12 @@ happy_data_2019_labels <- happy_data_2019 %>%
   summarise(countries = n()) %>% 
   arrange(countries)
 
-continents_ord <-c("Europe","Asia","Americas","Africa", "Oceania")
+continents_ord <-c("Oceania", "Americas","Europe","Asia","Africa")
 
-ridge_labels <- c( "Europe\n(n=40)","Asia\n(n=45)","Americas\n(n=23)","Africa\n(n=45)", "Oceania\n(n=2)")
+ridge_labels <- c("Oceania\n(n=2)","Americas\n(n=23)","Europe\n(n=40)","Asia\n(n=45)","Africa\n(n=45)")
 
 
-#mapping distributions across continents 
+#mapping distributions across continents. 
 
 ggplot(happy_data_2019, aes(x = score, y = factor(continent, levels = continents_ord), 
                             fill = continent, height = (stat(count)))
